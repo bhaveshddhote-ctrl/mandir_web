@@ -67,7 +67,13 @@ export const db = {
   getById: async (collectionName, id) => {
     try {
       const col = await db.getCollection(collectionName);
-      return await col.findOne({ _id: new ObjectId(id) });
+      let filter = { _id: id };
+      if (ObjectId.isValid(id)) {
+        filter = { $or: [{ _id: new ObjectId(id) }, { _id: id }, { id: id }] };
+      } else {
+        filter = { $or: [{ _id: id }, { id: id }] };
+      }
+      return await col.findOne(filter);
     } catch (err) {
       const items = readJson(collectionName);
       return items.find(item => item._id === id || item.id === id);
@@ -77,15 +83,15 @@ export const db = {
   create: async (collectionName, data) => {
     const newItem = {
       ...data,
-      _id: new Date().getTime().toString() + Math.random().toString(36).substring(2, 7),
+      _id: data._id || new Date().getTime().toString() + Math.random().toString(36).substring(2, 7),
       createdAt: new Date()
     };
     try {
       const col = await db.getCollection(collectionName);
-      const res = await col.insertOne({ ...data, createdAt: new Date() });
+      const res = await col.insertOne(newItem);
       return res;
     } catch (err) {
-      console.warn(`[db.js] MongoDB unavailable, writing to local JSON storage for '${collectionName}'`);
+      console.warn(`[db.js] MongoDB unavailable, writing to local JSON storage for '${collectionName}':`, err?.message);
       const items = readJson(collectionName);
       items.push(newItem);
       writeJson(collectionName, items);
@@ -96,8 +102,14 @@ export const db = {
   update: async (collectionName, id, data) => {
     try {
       const col = await db.getCollection(collectionName);
+      let filter = { _id: id };
+      if (ObjectId.isValid(id)) {
+        filter = { $or: [{ _id: new ObjectId(id) }, { _id: id }, { id: id }] };
+      } else {
+        filter = { $or: [{ _id: id }, { id: id }] };
+      }
       return await col.updateOne(
-        { _id: new ObjectId(id) },
+        filter,
         { $set: { ...data, updatedAt: new Date() } }
       );
     } catch (err) {
@@ -114,7 +126,13 @@ export const db = {
   delete: async (collectionName, id) => {
     try {
       const col = await db.getCollection(collectionName);
-      return await col.deleteOne({ _id: new ObjectId(id) });
+      let filter = { _id: id };
+      if (ObjectId.isValid(id)) {
+        filter = { $or: [{ _id: new ObjectId(id) }, { _id: id }, { id: id }] };
+      } else {
+        filter = { $or: [{ _id: id }, { id: id }] };
+      }
+      return await col.deleteOne(filter);
     } catch (err) {
       let items = readJson(collectionName);
       items = items.filter(item => item._id !== id && item.id !== id);
@@ -132,4 +150,3 @@ export const db = {
     }
   }
 };
-
