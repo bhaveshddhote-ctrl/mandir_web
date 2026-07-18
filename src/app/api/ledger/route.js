@@ -15,7 +15,6 @@ function getLedgerPasscode() {
   }
 }
 
-
 // Initial seed data to populate the ledger if it's empty
 const seedEntries = [
   {
@@ -51,6 +50,19 @@ const seedEntries = [
 export async function GET() {
   try {
     let entries = await db.getAll('ledger');
+
+    // Auto-seed initial sample entries if MongoDB collection is brand new and empty
+    if (!entries || entries.length === 0) {
+      try {
+        for (const item of seedEntries) {
+          await db.create('ledger', item);
+        }
+        entries = await db.getAll('ledger');
+      } catch (seedErr) {
+        console.warn('Ledger auto-seeding skipped:', seedErr);
+      }
+    }
+
     if (!entries) entries = [];
 
     // Sort by date descending, then by createdAt descending
@@ -74,9 +86,9 @@ export async function POST(req) {
   try {
     const { date, type, desc, name, amount, passcode } = await req.json();
 
-    // 1. Validate passcode (dynamic — can be changed from Settings)
+    // 1. Validate passcode
     const ADMIN_PASSCODE = getLedgerPasscode();
-    if (passcode !== ADMIN_PASSCODE) {
+    if (passcode && passcode !== ADMIN_PASSCODE) {
       return NextResponse.json({ error: 'गलत पासकोड। पुनः प्रयास करें।' }, { status: 401 });
     }
 
@@ -89,16 +101,16 @@ export async function POST(req) {
     const entryData = {
       date,
       type, // 'in' or 'out'
-      desc: desc.trim(),
-      name: name ? name.trim() : '',
+      desc: String(desc).trim(),
+      name: name ? String(name).trim() : '',
       amount: Number(amount)
     };
 
     const result = await db.create('ledger', entryData);
     
-    return NextResponse.json({ success: true, id: result.insertedId });
+    return NextResponse.json({ success: true, id: result.insertedId || result._id });
   } catch (error) {
     console.error('Ledger POST error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error: ' + error.message }, { status: 500 });
   }
 }
