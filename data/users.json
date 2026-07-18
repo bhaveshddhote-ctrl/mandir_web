@@ -1,0 +1,10 @@
+[
+  {
+    "_id": "admin001",
+    "name": "Mandir Admin",
+    "email": "admin@mandir.com",
+    "password": "mandir@2024",
+    "role": "Super Admin",
+    "createdAt": "2026-07-18T00:00:00.000Z"
+  }
+]
