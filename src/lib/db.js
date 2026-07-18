@@ -6,8 +6,12 @@ import path from 'path';
 const DATA_DIR = path.join(process.cwd(), 'data');
 
 const ensureDataDir = () => {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch (e) {
+    // Read-only filesystem on Vercel
   }
 };
 
@@ -32,7 +36,7 @@ const writeJson = (collectionName, data) => {
     const filePath = getJsonFile(collectionName);
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
   } catch (e) {
-    console.error('JSON write error:', e);
+    console.warn(`JSON write skipped for '${collectionName}' due to read-only filesystem`);
   }
 };
 
