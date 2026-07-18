@@ -53,7 +53,7 @@ export const db = {
       const col = await db.getCollection(collectionName);
       return await col.find(query).toArray();
     } catch (err) {
-      console.warn(`[db.js] MongoDB unavailable, using local JSON storage for '${collectionName}'`);
+      console.warn(`[db.js] MongoDB unavailable for '${collectionName}':`, err?.message || err);
       let items = readJson(collectionName);
       if (Object.keys(query).length > 0) {
         items = items.filter(item => {
