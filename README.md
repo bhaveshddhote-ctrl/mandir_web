@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🕉️ Shri Guru Gorakhnath Math - Management & Public Web Platform
 
-## Getting Started
+A modern, dynamic, real-time Temple Management System and Public Web Portal built with Next.js, React, Tailwind CSS, Lucide Icons, and dual MongoDB/JSON persistence.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 Key Features
+
+1. **🚩 Public Web Portal**:
+   - Multi-language support (Hindi, English, Marathi).
+   - Real-time Public Gallery with Lightbox modal view.
+   - Dynamic Festival & Events listing (managed via Admin CMS).
+   - Real-time Public Financial Ledger (Donations & Expenses transparency).
+   - Dynamic Bank Details & PhonePe/GPay/Paytm UPI QR Code scanning for direct donations.
+
+2. **🌐 Website Content Manager (Admin CMS)**:
+   - Edit Hero Banner (Title, Subtitle, Tagline, Location).
+   - Edit Mandir History & Tradition text.
+   - Add/Edit/Delete Festivals & Annual Events.
+   - Configure Mandir Address, Timings, Phone, Email & UPI Details.
+   - Upload & Manage UPI QR Code image.
+
+3. **🖼️ Gallery Management (`/gallery`)**:
+   - Drag & Drop photo upload.
+   - Visible / Hide toggle control for public display.
+   - Edit title and caption with instant real-time synchronization.
+
+4. **🏗️ Infrastructure & Construction Tracking (`/construction`)**:
+   - Track temple expansion projects (Dome Carving, Pilgrim Rest House, Kitchen, etc.).
+   - Allocated Budget vs Spent calculation, progress bar %, and status (On Track, Completed, Delayed).
+
+5. **💰 Financial Ledger (`/finance/donations` & `/finance/expenses`)**:
+   - Full income & expense management with Passcode security.
+   - Filter by date, category, search donor name, export reporting.
+
+---
+
+## 📁 Project Folder Structure
+
+```
+mandir_web/
+├── data/                    # Dynamic Database Persistence Files
+│   ├── site_content.json    # Website CMS content (Hero, History, Festivals, Contact, Bank)
+│   ├── gallery.json         # Uploaded gallery images metadata & visibility flags
+│   ├── construction.json    # Construction projects tracking dataset
+│   ├── ledger.json          # Financial transactions (Income/Expenses)
+│   ├── config.json          # Passcode settings
+│   └── users.json           # Admin user accounts & RBAC roles
+├── public/                  # Public Static & Uploaded Assets
+│   ├── gallery/             # Uploaded gallery image files
+│   └── uploads/             # QR codes & user uploads
+├── src/
+│   ├── app/
+│   │   ├── page.tsx         # Main Public Website (#home, #itihaas, #gallery, #utsav, #daan)
+│   │   ├── dashboard/       # Main Admin Dashboard & Analytics
+│   │   │   └── content/     # Website Content Manager (CMS)
+│   │   ├── gallery/         # Admin Gallery Manager
+│   │   ├── construction/    # Construction Project Manager
+│   │   ├── finance/         # Financial Ledger (Donations & Expenses)
+│   │   ├── login/           # Admin Authentication Page
+│   │   └── api/             # Next.js Serverless API Endpoints
+│   ├── components/          # Reusable Layouts (Sidebar, TopBar, RoleGuard)
+│   ├── context/             # AuthContext state provider
+│   └── lib/                 # Database handlers (db.js, mongodb.js)
+├── .env.example             # Environment variables template
+├── .env.local               # Local environment variables
+└── package.json             # NPM dependencies & scripts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔐 Environment Variables (`.env.local` / `.env.example`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable Name | Description | Default / Example |
+| :--- | :--- | :--- |
+| `PORT` | Local server port | `3000` |
+| `NODE_ENV` | Environment mode | `development` or `production` |
+| `MONGODB_URI` | MongoDB Connection URI (Optional) | `mongodb://127.0.0.1:27017/mandir_management` |
+| `NEXTAUTH_SECRET` | Authentication Secret Key | `gorakhnath_math_secret_key_108` |
 
-## Learn More
+> 💡 **Dual Database Mode**: If `MONGODB_URI` is provided, system stores data in MongoDB Atlas/Cloud DB. If omitted, system seamlessly defaults to lightweight JSON database files inside `/data` directory.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 How to Run Locally
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-## Deploy on Vercel
+2. **Run Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:3000` in your browser.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. **Default Credentials**:
+   - **Admin Email**: `admin@mandir.com`
+   - **Password**: `mandir@2024`
+   - **Ledger Passcode**: `namah108`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 📤 How to Push to GitHub & Deploy to Production
+
+### 1. Push to your GitHub Repository:
+Run the following commands in terminal:
+
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/mandir_web.git
+git branch -M main
+git push -u origin main
+```
+
+### 2. Deploy to Vercel (Recommended):
+1. Go to [Vercel.com](https://vercel.com) and click **Add New Project**.
+2. Import your GitHub repository (`mandir_web`).
+3. Add environment variables if using Cloud MongoDB (`MONGODB_URI`).
+4. Click **Deploy**. Vercel will automatically build and publish your website!
