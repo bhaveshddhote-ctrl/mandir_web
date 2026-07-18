@@ -53,49 +53,55 @@ function writeLocalJson(data) {
     }
     fs.writeFileSync(CONTENT_FILE, JSON.stringify(data, null, 2), 'utf8');
   } catch (e) {
-    console.warn('ReadOnly Filesystem on Vercel - Skipped JSON file write');
+    // Graceful fallback on Vercel read-only filesystem
   }
+}
+
+async function getExistingContent() {
+  try {
+    const docs = await db.getAll('site_content');
+    if (docs && docs.length > 0 && docs[0].content) {
+      return docs[0].content;
+    }
+  } catch (e) {
+    console.warn('MongoDB read failed for site-content, using local fallback');
+  }
+  return readLocalJson();
 }
 
 export async function GET() {
   try {
-    // Try reading from MongoDB collection 'site_content'
-    const docs = await db.getAll('site_content');
-    if (docs && docs.length > 0 && docs[0].content) {
-      return NextResponse.json(docs[0].content);
-    }
-    const localData = readLocalJson();
-    return NextResponse.json(localData);
+    const content = await getExistingContent();
+    return NextResponse.json(content);
   } catch (error) {
     console.error('GET site-content error:', error);
-    const fallback = readLocalJson();
-    return NextResponse.json(fallback);
+    return NextResponse.json(readLocalJson());
   }
 }
 
 export async function POST(req) {
   try {
     const body = await req.json();
-    const current = readLocalJson();
+    const current = await getExistingContent();
     const updated = {
       ...current,
       ...body,
       updatedAt: new Date().toISOString()
     };
 
-    // Save to MongoDB if available
+    let mongoSaved = false;
     try {
       const col = await db.getCollection('site_content');
-      await col.deleteMany({}); // Keep single active content document
+      await col.deleteMany({}); // Maintain single active CMS document
       await col.insertOne({ content: updated, updatedAt: new Date() });
+      mongoSaved = true;
     } catch (mongoErr) {
-      console.warn('MongoDB save failed for site-content, attempting local JSON write');
+      console.error('MongoDB save error in site-content:', mongoErr);
     }
 
-    // Try saving to local JSON (will fail gracefully on Vercel read-only FS)
     writeLocalJson(updated);
 
-    return NextResponse.json({ success: true, content: updated });
+    return NextResponse.json({ success: true, mongoSaved, content: updated });
   } catch (error) {
     console.error('POST site-content error:', error);
     return NextResponse.json({ error: 'Failed to save site content' }, { status: 500 });
